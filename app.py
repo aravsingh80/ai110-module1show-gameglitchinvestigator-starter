@@ -34,10 +34,16 @@ def check_guess(guess, secret):
         return "Win", "🎉 Correct!"
 
     try:
+        # if guess > secret:
+        #     return "Too High", "📉 Go LOWER!"
+        # else:
+        #     return "Too Low", "📈 Go HIGHER!"
+
+        #FIX: Switched recommendations based on the comparison between guess and secret
         if guess > secret:
-            return "Too High", "📈 Go HIGHER!"
+            return "Too High", "📉 Go LOWER!"
         else:
-            return "Too Low", "📉 Go LOWER!"
+            return "Too Low", "📈 Go HIGHER!"
     except TypeError:
         g = str(guess)
         if g == secret:
@@ -93,7 +99,10 @@ if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
 if "attempts" not in st.session_state:
-    st.session_state.attempts = 1
+    # st.session_state.attempts = 1
+
+    #FIX: Changed the attempts initialization to 0 so that the attempts doesn't prematurely run out
+    st.session_state.attempts = 0
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -106,10 +115,13 @@ if "history" not in st.session_state:
 
 st.subheader("Make a guess")
 
-st.info(
-    f"Guess a number between 1 and 100. "
-    f"Attempts left: {attempt_limit - st.session_state.attempts}"
-)
+# st.info(
+#     f"Guess a number between 1 and 100. "
+#     f"Attempts left: {attempt_limit - st.session_state.attempts}"
+# )
+
+#FIX: Reserves a slot for the attempts widget so it can be updated at the proper rendering position
+attempts_info = st.empty()
 
 with st.expander("Developer Debug Info"):
     st.write("Secret:", st.session_state.secret)
@@ -137,12 +149,21 @@ if new_game:
     st.success("New game started.")
     st.rerun()
 
-if st.session_state.status != "playing":
-    if st.session_state.status == "won":
-        st.success("You already won. Start a new game to play again.")
-    else:
-        st.error("Game over. Start a new game to try again.")
-    st.stop()
+# if st.session_state.status != "playing":
+#     if st.session_state.status == "won":
+#         st.success("You already won. Start a new game to play again.")
+#     else:
+#         st.error("Game over. Start a new game to try again.")
+#     st.stop()
+
+#FIX: Moved the status reset to the new game handler so that it is properly updated
+    if st.session_state.status != "playing":
+        if st.session_state.status == "won":
+            st.success("You already won. Start a new game to play again.")
+        else:
+            st.error("Game over. Start a new game to try again.")
+        st.stop()
+
 
 if submit:
     st.session_state.attempts += 1
@@ -155,10 +176,13 @@ if submit:
     else:
         st.session_state.history.append(guess_int)
 
-        if st.session_state.attempts % 2 == 0:
-            secret = str(st.session_state.secret)
-        else:
-            secret = st.session_state.secret
+        # if st.session_state.attempts % 2 == 0:
+        #     secret = str(st.session_state.secret)
+        # else:
+        #     secret = st.session_state.secret
+        
+        #FIX: 
+        secret = st.session_state.secret
 
         outcome, message = check_guess(guess_int, secret)
 
@@ -186,6 +210,12 @@ if submit:
                     f"The secret was {st.session_state.secret}. "
                     f"Score: {st.session_state.score}"
                 )
+
+#FIX: Updates widget at proper rendering position
+attempts_info.info(
+    f"Guess a number between 1 and 100. "
+    f"Attempts left: {attempt_limit - st.session_state.attempts}"
+)
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")
